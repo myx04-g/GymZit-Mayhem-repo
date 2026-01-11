@@ -149,6 +149,143 @@ input[type="color"] { padding: 0; height: 30px; }
     </form>
 </div>
 
+<style>
+/* Center login form */
+#login-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e1e2f, #282842);
+}
+
+#auth-form {
+    background-color: #22224d;
+    padding: 30px 25px;
+    border-radius: 12px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+#auth-form h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #ff5c5c;
+}
+
+#auth-form input {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1em;
+}
+
+#auth-form button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#auth-btn {
+    background-color: #ff5c5c;
+    color: #fff;
+    font-weight: bold;
+}
+
+#auth-btn:hover {
+    background-color: #ff3a3a;
+}
+
+#toggle-auth {
+    background: transparent;
+    color: #fff;
+    text-decoration: underline;
+    font-size: 0.9em;
+}
+
+@media (max-width: 400px) {
+    #auth-form { width: 90%; padding: 20px; }
+}
+</style>
+
+<script>
+/* ===== LOGIN & REGISTER WITH LOCALSTORAGE ===== */
+const authForm = document.getElementById('auth-form');
+const authTitle = document.getElementById('auth-title');
+const toggleAuth = document.getElementById('toggle-auth');
+const authBtn = document.getElementById('auth-btn');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+
+let authMode = 'login'; // 'login' or 'register'
+
+// Load users from localStorage or create empty object
+let users = JSON.parse(localStorage.getItem('users') || '{}');
+
+toggleAuth.onclick = () => {
+    if(authMode === 'login'){
+        authMode = 'register';
+        authTitle.textContent = 'Register';
+        authBtn.textContent = 'Register';
+        toggleAuth.textContent = 'Switch to Login';
+    } else {
+        authMode = 'login';
+        authTitle.textContent = 'Login';
+        authBtn.textContent = 'Login';
+        toggleAuth.textContent = 'Switch to Register';
+    }
+}
+
+authForm.onsubmit = (e) => {
+    e.preventDefault();
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if(authMode === 'register'){
+        if(users[username]) { alert('User already exists'); return; }
+        users[username] = {password, cards: [], money: 0, gems: 0, lastOnline: Date.now()};
+        localStorage.setItem('users', JSON.stringify(users));
+        loginUser(username);
+    } else { // login
+        if(!users[username] || users[username].password !== password){
+            alert('Invalid username or password');
+            return;
+        }
+        loginUser(username);
+    }
+};
+
+function loginUser(username){
+    currentUser = username;
+    devMode = (username === 'michael.shp');
+
+    // Hide login form, show main app
+    document.getElementById('login-register').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+
+    if(devMode){
+        document.getElementById('dev-backpack-controls').classList.remove('hidden');
+        document.getElementById('dev-shop-controls').classList.remove('hidden');
+        document.getElementById('dev-settings').classList.remove('hidden');
+    }
+
+    loadBackpack();
+    loadShop();
+    startWorkspaceEarnings();
+}
+
+// Update localStorage whenever user data changes
+function saveUsers(){
+    localStorage.setItem('users', JSON.stringify(users));
+}
+</script>
+
 <!-- MAIN APP -->
 <div id="main-app" class="hidden">
     <header>

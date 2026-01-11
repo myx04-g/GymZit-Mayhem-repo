@@ -144,10 +144,8 @@ input[type="color"] { padding: 0; height: 30px; }
         <h2 id="auth-title">Login</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
-        <input type="tel" id="phone" placeholder="Phone Number" class="hidden">
         <button type="submit" id="auth-btn">Login</button>
         <button type="button" id="toggle-auth">Switch to Register</button>
-        <input type="text" id="sms-code" placeholder="Enter SMS Code" class="hidden">
     </form>
 </div>
 
@@ -264,25 +262,20 @@ const toggleAuth = document.getElementById('toggle-auth');
 const authBtn = document.getElementById('auth-btn');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
-const phoneInput = document.getElementById('phone');
-const smsCodeInput = document.getElementById('sms-code');
 
-let authMode = 'login';
-let simulatedSMSCode = '';
+let authMode = 'login'; // 'login' or 'register'
 
 toggleAuth.onclick = () => {
     if(authMode === 'login'){
         authMode = 'register';
         authTitle.textContent = 'Register';
         authBtn.textContent = 'Register';
-        phoneInput.classList.remove('hidden');
-        smsCodeInput.classList.remove('hidden');
+        toggleAuth.textContent = 'Switch to Login';
     } else {
         authMode = 'login';
         authTitle.textContent = 'Login';
         authBtn.textContent = 'Login';
-        phoneInput.classList.add('hidden');
-        smsCodeInput.classList.add('hidden');
+        toggleAuth.textContent = 'Switch to Register';
     }
 }
 
@@ -290,26 +283,14 @@ authForm.onsubmit = (e) => {
     e.preventDefault();
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
-    const phone = phoneInput.value.trim();
-    const code = smsCodeInput.value.trim();
 
     if(authMode === 'register'){
-        if(users[username]) { alert('User exists'); return; }
-        simulatedSMSCode = Math.floor(1000 + Math.random()*9000).toString();
-        if(!code || code !== simulatedSMSCode){
-            alert('Simulated SMS code: ' + simulatedSMSCode);
-            return;
-        }
-        users[username] = {password, phone, cards: [], money: 0, gems: 0, lastOnline: Date.now()};
+        if(users[username]) { alert('User already exists'); return; }
+        users[username] = {password, cards: [], money: 0, gems: 0, lastOnline: Date.now()};
         loginUser(username);
-    } else {
+    } else { // login
         if(!users[username] || users[username].password !== password){
-            alert('Invalid credentials');
-            return;
-        }
-        simulatedSMSCode = Math.floor(1000 + Math.random()*9000).toString();
-        if(!code || code !== simulatedSMSCode){
-            alert('Simulated SMS code sent: ' + simulatedSMSCode);
+            alert('Invalid username or password');
             return;
         }
         loginUser(username);

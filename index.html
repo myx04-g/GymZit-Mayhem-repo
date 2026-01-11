@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gymzit-Mayhem</title>
+<style>
+:root {
+    --primary-color: #1e1e2f;
+    --secondary-color: #282842;
+    --accent-color: #ff5c5c;
+    --text-color: #ffffff;
+    --card-width: 120px;
+    --card-height: 180px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.hidden { display: none; }
+
+header {
+    background-color: var(--secondary-color);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+nav button {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1em;
+}
+
+nav button.active {
+    border-bottom: 2px solid var(--accent-color);
+}
+
+#login-register, #main-app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#login-register form {
+    background-color: var(--secondary-color);
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input, button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1em;
+}
+
+input { width: 100%; }
+
+button {
+    background-color: var(--accent-color);
+    color: #fff;
+    cursor: pointer;
+}
+
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tabs { padding: 20px; }
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
+    gap: 10px;
+}
+
+.card {
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: var(--secondary-color);
+    border: 3px solid #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.card:hover { transform: scale(1.05); }
+
+.card img { width: 100%; height: auto; border-radius: 5px; }
+
+.card-attributes { font-size: 0.8em; text-align: center; }
+
+.notification {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: var(--secondary-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border-left: 5px solid var(--accent-color);
+    margin-bottom: 5px;
+    z-index: 999;
+    opacity: 0.95;
+}
+
+input[type="color"] { padding: 0; height: 30px; }
+
+@media (max-width: 600px) {
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    header { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN & REGISTER -->
+<div id="login-register">
+    <form id="auth-form">
+        <h2 id="auth-title">Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="tel" id="phone" placeholder="Phone Number" class="hidden">
+        <button type="submit" id="auth-btn">Login</button>
+        <button type="button" id="toggle-auth">Switch to Register</button>
+        <input type="text" id="sms-code" placeholder="Enter SMS Code" class="hidden">
+    </form>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="hidden">
+    <header>
+        <h1>Gymzit-Mayhem</h1>
+        <nav>
+            <button class="tab-btn active" data-tab="home">Home</button>
+            <button class="tab-btn" data-tab="backpack">Backpack</button>
+            <button class="tab-btn" data-tab="shop">Shop</button>
+            <button class="tab-btn" data-tab="workspace">Workspace</button>
+            <button class="tab-btn" data-tab="market">Market</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+        </nav>
+    </header>
+    <div class="tabs">
+        <!-- Home -->
+        <div id="home-tab" class="tab-content">
+            <h2>Welcome to Gymzit-Mayhem!</h2>
+            <p>Collect, trade, and earn with your cards!</p>
+        </div>
+
+        <!-- Backpack -->
+        <div id="backpack-tab" class="tab-content hidden">
+            <input type="text" id="card-search" placeholder="Search cards by name, class, or attribute">
+            <div class="card-grid" id="backpack-grid"></div>
+            <div id="card-details"></div>
+            <div id="dev-backpack-controls" class="hidden">
+                <h3>Dev Mode: Spawn Card</h3>
+                <input type="text" id="dev-card-name" placeholder="Card Name">
+                <input type="text" id="dev-card-image" placeholder="Image URL">
+                <input type="color" id="dev-card-class-color" value="#ff5c5c">
+                <input type="text" id="dev-card-class" placeholder="Class Name">
+                <input type="number" id="dev-card-worth" placeholder="Worth">
+                <input type="number" id="dev-card-money" placeholder="Money/5s">
+                <input type="text" id="dev-card-attributes" placeholder="Attributes">
+                <button id="dev-spawn-card">Spawn Card</button>
+            </div>
+        </div>
+
+        <!-- Shop -->
+        <div id="shop-tab" class="tab-content hidden">
+            <h3>Shop</h3>
+            <div class="card-grid" id="shop-grid"></div>
+            <div id="dev-shop-controls" class="hidden">
+                <h3>Dev Mode: Create Pack</h3>
+                <input type="text" id="dev-pack-name" placeholder="Pack Name">
+                <input type="number" id="dev-pack-min" placeholder="Min Cards">
+                <input type="number" id="dev-pack-max" placeholder="Max Cards">
+                <input type="text" id="dev-pack-cardids" placeholder="Card IDs (comma)">
+                <input type="text" id="dev-pack-probabilities" placeholder="Probabilities (comma)">
+                <input type="checkbox" id="dev-pack-duplicates"> Allow Duplicates
+                <input type="checkbox" id="dev-pack-limited"> Limited
+                <button id="dev-create-pack">Create Pack</button>
+            </div>
+        </div>
+
+        <!-- Workspace -->
+        <div id="workspace-tab" class="tab-content hidden">
+            <h3>Workspace</h3>
+            <div id="workspace-fields" class="card-grid"></div>
+            <p>Money: $<span id="workspace-money">0</span></p>
+            <p>Gems: <span id="workspace-gems">0</span></p>
+        </div>
+
+        <!-- Market -->
+        <div id="market-tab" class="tab-content hidden">
+            <h3>Market</h3>
+            <button id="sell-something">Sell Something</button>
+            <button id="sell-multiple">Sell Multiple</button>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings-tab" class="tab-content hidden">
+            <h3>Settings</h3>
+            <label>Theme Primary: <input type="color" id="theme-primary" value="#1e1e2f"></label>
+            <label>Theme Secondary: <input type="color" id="theme-secondary" value="#282842"></label>
+            <label>Theme Accent: <input type="color" id="theme-accent" value="#ff5c5c"></label>
+            <h4>Quick Sign-in Accounts</h4>
+            <div id="quick-accounts"></div>
+            <h4>Change Password</h4>
+            <input type="password" id="new-password" placeholder="New Password">
+            <button id="change-password-btn">Change Password</button>
+            <div id="dev-settings" class="hidden">
+                <h4>Developer Settings</h4>
+                <p>Visible only to michael.shp</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications -->
+<div id="notifications"></div>
+
+<script>
+/* ======== GLOBAL STATE ======== */
+let currentUser = null;
+let users = {}; // username -> {password, phone, cards, money, gems, lastOnline}
+let devMode = false;
+let cardIdCounter = 1;
+let packIdCounter = 1;
+let cardDatabase = {};
+let packDatabase = {};
+let workspaceMoney = 0;
+let workspaceGems = 0;
+let workspaceCards = [];
+let offlineInterval = null;
+
+/* ======== AUTHENTICATION ======== */
+const authForm = document.getElementById('auth-form');
+const authTitle = document.getElementById('auth-title');
+const toggleAuth = document.getElementById('toggle-auth');
+const authBtn = document.getElementById('auth-btn');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const phoneInput = document.getElementById('phone');
+const smsCodeInput = document.getElementById('sms-code');
+
+let authMode = 'login';
+let simulatedSMSCode = '';
+
+toggleAuth.onclick = () => {
+    if(authMode === 'login'){
+        authMode = 'register';
+        authTitle.textContent = 'Register';
+        authBtn.textContent = 'Register';
+        phoneInput.classList.remove('hidden');
+        smsCodeInput.classList.remove('hidden');
+    } else {
+        authMode = 'login';
+        authTitle.textContent = 'Login';
+        authBtn.textContent = 'Login';
+        phoneInput.classList.add('hidden');
+        smsCodeInput.classList.add('hidden');
+    }
+}
+
+authForm.onsubmit = (e) => {
+    e.preventDefault();
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const code = smsCodeInput.value.trim();
+
+    if(authMode === 'register'){
+        if(users[username]) { alert('User exists'); return; }
+        simulatedSMSCode = Math.floor(1000 + Math.random()*9000).toString();
+        if(!code || code !== simulatedSMSCode){
+            alert('Simulated SMS code: ' + simulatedSMSCode);
+            return;
+        }
+        users[username] = {password, phone, cards: [], money: 0, gems: 0, lastOnline: Date.now()};
+        loginUser(username);
+    } else {
+        if(!users[username] || users[username].password !== password){
+            alert('Invalid credentials');
+            return;
+        }
+        simulatedSMSCode = Math.floor(1000 + Math.random()*9000).toString();
+        if(!code || code !== simulatedSMSCode){
+            alert('Simulated SMS code sent: ' + simulatedSMSCode);
+            return;
+        }
+        loginUser(username);
+    }
+};
+
+function loginUser(username){
+    currentUser = username;
+    devMode = (username === 'michael.shp');
+    document.getElementById('login-register').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+
+    if(devMode){
+        document.getElementById('dev-backpack-controls').classList.remove('hidden');
+        document.getElementById('dev-shop-controls').classList.remove('hidden');
+        document.getElementById('dev-settings').classList.remove('hidden');
+    }
+
+    loadBackpack();
+    loadShop();
+    startWorkspaceEarnings();
+}
+
+/* ======== TABS ======== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.add('hidden'));
+        document.getElementById(btn.dataset.tab + '-tab').classList.remove('hidden');
+    }
+});
+
+/* ======== BACKPACK ======== */
+const backpackGrid = document.getElementById('backpack-grid');
+const cardSearch = document.getElementById('card-search');
+cardSearch.oninput = loadBackpack;
+
+function loadBackpack(){
+    const search = cardSearch.value.toLowerCase();
+    backpackGrid.innerHTML = '';
+    users[currentUser].cards.forEach(card=>{
+        if(card.name.toLowerCase().includes(search) || card.class.toLowerCase().includes(search) || card.attributes.toLowerCase().includes(search)){
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.style.borderColor = card.classColor;
+            div.innerHTML = `<img src="${card.image}" alt="${card.name}"><div class="card-attributes">${card.name}<br>${card.class}<br>${card.attributes}</div>`;
+            backpackGrid.appendChild(div);
+        }
+    });
+}
+
+/* ======== DEV MODE: SPAWN CARD ======== */
+if(devMode){
+    document.getElementById('dev-spawn-card').onclick = () => {
+        const card = {
+            id: cardIdCounter++,
+            name: document.getElementById('dev-card-name').value || 'DevCard',
+            image: document.getElementById('dev-card-image').value || 'https://via.placeholder.com/120x180.png?text=Card',
+            classColor: document.getElementById('dev-card-class-color').value,
+            class: document.getElementById('dev-card-class').value || 'Common',
+            worth: Number(document.getElementById('dev-card-worth').value) || 10,
+            moneyPer5s: Number(document.getElementById('dev-card-money').value) || 1,
+            attributes: document.getElementById('dev-card-attributes').value || ''
+        };
+        cardDatabase[card.id] = card;
+        users[currentUser].cards.push(card);
+        loadBackpack();
+        showNotification(`Spawned card: ${card.name}`, card.classColor);
+    };
+}
+
+/* ======== SHOP ======== */
+const shopGrid = document.getElementById('shop-grid');
+
+function loadShop(){
+    shopGrid.innerHTML = '';
+    Object.values(packDatabase).forEach(pack=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.borderColor = '#fff';
+        div.innerHTML = `<img src="https://via.placeholder.com/120x180.png?text=Pack"><div class="card-attributes">${pack.name}<br>Cards: ${pack.minCards}-${pack.maxCards}</div><button onclick="buyPack(${pack.id})">Buy Pack</button>`;
+        shopGrid.appendChild(div);
+    });
+}
+
+function buyPack(packId){
+    const pack = packDatabase[packId];
+    if(!pack) return;
+    // Add random cards from pack to backpack
+    const numCards = Math.floor(Math.random()*(pack.maxCards-pack.minCards+1))+pack.minCards;
+    for(let i=0;i<numCards;i++){
+        const cardId = pack.cardIDs[Math.floor(Math.random()*pack.cardIDs.length)];
+        const card = cardDatabase[cardId];
+        if(card) users[currentUser].cards.push({...card});
+    }
+    loadBackpack();
+    showNotification(`Opened pack: ${pack.name}`, '#fff');
+}
+
+/* ======== DEV MODE: CREATE PACK ======== */
+if(devMode){
+    document.getElementById('dev-create-pack').onclick = () => {
+        const pack = {
+            id: packIdCounter++,
+            name: document.getElementById('dev-pack-name').value || 'DevPack',
+            minCards: Number(document.getElementById('dev-pack-min').value) || 1,
+            maxCards: Number(document.getElementById('dev-pack-max').value) || 3,
+            cardIDs: document.getElementById('dev-pack-cardids').value.split(',').map(Number),
+            probabilities: document.getElementById('dev-pack-probabilities').value.split(',').map(Number),
+            duplicates: document.getElementById('dev-pack-duplicates').checked,
+            limited: document.getElementById('dev-pack-limited').checked
+        };
+        packDatabase[pack.id] = pack;
+        loadShop();
+        showNotification(`Created pack: ${pack.name}`, '#fff');
+    };
+}
+
+/* ======== WORKSPACE ======== */
+const workspaceFields = document.getElementById('workspace-fields');
+const workspaceMoneyDisplay = document.getElementById('workspace-money');
+const workspaceGemsDisplay = document.getElementById('workspace-gems');
+
+function startWorkspaceEarnings(){
+    // Load workspace cards if any
+    workspaceCards = users[currentUser].cards.slice(0,5);
+    renderWorkspace();
+    if(offlineInterval) clearInterval(offlineInterval);
+    offlineInterval = setInterval(()=>{
+        let money = 0;
+        let gems = 0;
+        workspaceCards.forEach(card=>{
+            money += card.moneyPer5s;
+            if(card.attributes.toLowerCase().includes('exclusive')) gems += (5/300)*1; // 5 sec / 30 min
+        });
+        workspaceMoney += money;
+        workspaceGems += gems;
+        workspaceMoneyDisplay.textContent = Math.floor(workspaceMoney);
+        workspaceGemsDisplay.textContent = Math.floor(workspaceGems);
+    },5000);
+}
+
+function renderWorkspace(){
+    workspaceFields.innerHTML = '';
+    workspaceCards.forEach(card=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.borderColor = card.classColor;
+        div.innerHTML = `<img src="${card.image}" alt="${card.name}"><div class="card-attributes">${card.name}</div>`;
+        workspaceFields.appendChild(div);
+    });
+}
+
+/* ======== SETTINGS ======== */
+document.getElementById('theme-primary').oninput = e => document.documentElement.style.setProperty('--primary-color', e.target.value);
+document.getElementById('theme-secondary').oninput = e => document.documentElement.style.setProperty('--secondary-color', e.target.value);
+document.getElementById('theme-accent').oninput = e => document.documentElement.style.setProperty('--accent-color', e.target.value);
+
+/* ======== NOTIFICATIONS ======== */
+function showNotification(message, color='#fff'){
+    const notif = document.createElement('div');
+    notif.className = 'notification';
+    notif.style.borderLeftColor = color;
+    notif.textContent = message;
+    document.getElementById('notifications').appendChild(notif);
+    setTimeout(()=>notif.remove(), 3000);
+}
+
+/* ======== INITIAL DEV DATA ======== */
+if(devMode){
+    // Create default card
+    const card = {id:cardIdCounter++, name:'Starter Card', image:'https://via.placeholder.com/120x180.png?text=Card', classColor:'#ff5c5c', class:'Common', worth:10, moneyPer5s:1, attributes:'limited'};
+    cardDatabase[card.id] = card;
+    users[currentUser].cards.push(card);
+    // Create default pack
+    const pack = {id:packIdCounter++, name:'Starter Pack', minCards:1, maxCards:1, cardIDs:[card.id], probabilities:[1], duplicates:true, limited:false};
+    packDatabase[pack.id] = pack;
+}
+</script>
+</body>
+</html>
